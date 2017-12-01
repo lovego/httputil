@@ -1,6 +1,7 @@
 package httputil
 
 import (
+	"io/ioutil"
 	"net/http"
 )
 
@@ -64,11 +65,18 @@ func (c *Client) Do(method, url string, headers map[string]string, body interfac
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
-	if resp, err := c.Client.Do(req); err != nil {
-		return nil, err
-	} else {
-		return &Response{Response: resp}, nil
+	resp, err := c.Client.Do(req)
+	if resp.Body != nil {
+		defer resp.Body.Close()
 	}
+	if err != nil {
+		return nil, err
+	}
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return &Response{Response: resp, body: respBody}, nil
 }
 
 func (c *Client) DoJson(method, url string, headers map[string]string, body, data interface{}) error {

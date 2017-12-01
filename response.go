@@ -3,9 +3,8 @@ package httputil
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strings"
@@ -14,18 +13,6 @@ import (
 type Response struct {
 	*http.Response
 	body []byte
-}
-
-func (resp *Response) GetBody() ([]byte, error) {
-	if resp.body == nil {
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		resp.body = body
-		if err != nil {
-			return body, err
-		}
-	}
-	return resp.body, nil
 }
 
 func (resp *Response) Ok() error {
@@ -45,40 +32,26 @@ func (resp *Response) Check(codes ...int) error {
 }
 
 func (resp *Response) CodeError() error {
-	msg := `HTTP ` + resp.Request.Method + ` ` + resp.Request.URL.String() + "\n" +
-		`Unexpected Response: ` + resp.Status
-	if body, err := resp.GetBody(); err == nil {
-		msg += "\n" + string(body)
-	} else {
-		msg += "\n(GetBody error: " + err.Error() + `)`
-	}
-	return errors.New(msg)
+	return fmt.Errorf(`HTTP %s %s
+Unexpected Response: %s
+%s`, resp.Request.Method, resp.Request.URL.String(), resp.Status, resp.body,
+	)
 }
 
 func (resp *Response) Json(data interface{}) error {
 	if data == nil {
-		defer resp.Body.Close()
 		return nil
 	}
-	body, err := resp.GetBody()
-	if err != nil {
-		return err
-	}
-	decoder := json.NewDecoder(bytes.NewBuffer(body))
+	decoder := json.NewDecoder(bytes.NewBuffer(resp.body))
 	decoder.UseNumber()
 	return decoder.Decode(&data)
 }
 
 func (resp *Response) Json2(data interface{}) error {
 	if data == nil {
-		resp.Body.Close()
 		return nil
 	}
-	body, err := resp.GetBody()
-	if err != nil {
-		return err
-	}
-	if err := json.Unmarshal(body, &data); err != nil {
+	if err := json.Unmarshal(resp.body, &data); err != nil {
 		return err
 	}
 	return nil
