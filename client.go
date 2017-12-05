@@ -66,7 +66,7 @@ func (c *Client) Do(method, url string, headers map[string]string, body interfac
 		req.Header.Set(k, v)
 	}
 	resp, err := c.Client.Do(req)
-	if resp.Body != nil {
+	if resp != nil && resp.Body != nil {
 		defer resp.Body.Close()
 	}
 	if err != nil {
