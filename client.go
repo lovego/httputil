@@ -1,8 +1,13 @@
 package httputil
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"reflect"
+	"strings"
 )
 
 type Client struct {
@@ -88,4 +93,42 @@ func (c *Client) DoJson(method, url string, headers map[string]string, body, dat
 		return err
 	}
 	return resp.Json(data)
+}
+
+func makeBodyReader(data interface{}) (io.Reader, error) {
+	if data == nil {
+		return nil, nil
+	}
+	var reader io.Reader
+	switch body := data.(type) {
+	case io.Reader:
+		reader = body
+	case string:
+		if len(body) > 0 {
+			reader = strings.NewReader(body)
+		}
+	case []byte:
+		if len(body) > 0 {
+			reader = bytes.NewBuffer(body)
+		}
+	default:
+		if !isNil(body) {
+			buf, err := json.Marshal(body)
+			if err != nil {
+				return nil, err
+			}
+			reader = bytes.NewBuffer(buf)
+		}
+	}
+	return reader, nil
+}
+
+func isNil(data interface{}) bool {
+	v := reflect.ValueOf(data)
+	switch v.Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Slice, reflect.Chan, reflect.Func:
+		return v.IsNil()
+	default:
+		return false
+	}
 }
