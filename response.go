@@ -12,6 +12,10 @@ type Response struct {
 	body []byte
 }
 
+func (resp *Response) Body() []byte {
+	return resp.body
+}
+
 func (resp *Response) Ok() error {
 	if resp.StatusCode != http.StatusOK {
 		return resp.CodeError()
