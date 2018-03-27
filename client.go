@@ -68,7 +68,7 @@ func (c *Client) Do(method, url string, headers map[string]string, body interfac
 		return nil, err
 	}
 	for k, v := range headers {
-		req.Header.Set(k, v)
+		req.Header[k] = []string{v}
 	}
 	resp, err := c.Client.Do(req)
 	if resp != nil && resp.Body != nil {
