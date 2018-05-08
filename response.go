@@ -2,6 +2,7 @@ package httputil
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,6 +11,56 @@ import (
 type Response struct {
 	*http.Response
 	body []byte
+}
+
+func Get(url string, headers map[string]string, body interface{}) (*Response, error) {
+	return DefaultClient.Do(http.MethodGet, url, headers, body)
+}
+
+func GetCtx(
+	ctx context.Context, opName, url string, headers map[string]string, body interface{},
+) (*Response, error) {
+	return DefaultClient.DoCtx(ctx, opName, http.MethodGet, url, headers, body)
+}
+
+func Post(url string, headers map[string]string, body interface{}) (*Response, error) {
+	return DefaultClient.Do(http.MethodPost, url, headers, body)
+}
+
+func PostCtx(
+	ctx context.Context, opName, url string, headers map[string]string, body interface{},
+) (*Response, error) {
+	return DefaultClient.DoCtx(ctx, opName, http.MethodPost, url, headers, body)
+}
+
+func Head(url string, headers map[string]string, body interface{}) (*Response, error) {
+	return DefaultClient.Do(http.MethodHead, url, headers, body)
+}
+
+func HeadCtx(
+	ctx context.Context, opName, url string, headers map[string]string, body interface{},
+) (*Response, error) {
+	return DefaultClient.DoCtx(ctx, opName, http.MethodHead, url, headers, body)
+}
+
+func Put(url string, headers map[string]string, body interface{}) (*Response, error) {
+	return DefaultClient.Do(http.MethodPut, url, headers, body)
+}
+
+func PutCtx(
+	ctx context.Context, opName, url string, headers map[string]string, body interface{},
+) (*Response, error) {
+	return DefaultClient.DoCtx(ctx, opName, http.MethodPut, url, headers, body)
+}
+
+func Delete(url string, headers map[string]string, body interface{}) (*Response, error) {
+	return DefaultClient.Do(http.MethodDelete, url, headers, body)
+}
+
+func DeleteCtx(
+	ctx context.Context, opName, url string, headers map[string]string, body interface{},
+) (*Response, error) {
+	return DefaultClient.DoCtx(ctx, opName, http.MethodDelete, url, headers, body)
 }
 
 func (resp *Response) Body() []byte {
