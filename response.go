@@ -96,7 +96,15 @@ func (resp *Response) Json(data interface{}) error {
 	}
 	decoder := json.NewDecoder(bytes.NewBuffer(resp.body))
 	decoder.UseNumber()
-	return decoder.Decode(&data)
+	if err := decoder.Decode(&data); err != nil {
+		return nil
+	}
+	if d, ok := data.(interface {
+		ValidateResponse(resp *Response) error
+	}); ok {
+		return d.ValidateResponse(resp)
+	}
+	return nil
 }
 
 func (resp *Response) Json2(data interface{}) error {
@@ -105,6 +113,11 @@ func (resp *Response) Json2(data interface{}) error {
 	}
 	if err := json.Unmarshal(resp.body, &data); err != nil {
 		return err
+	}
+	if d, ok := data.(interface {
+		ValidateResponse(resp *Response) error
+	}); ok {
+		return d.ValidateResponse(resp)
 	}
 	return nil
 }
