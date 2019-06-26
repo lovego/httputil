@@ -97,7 +97,7 @@ func (resp *Response) Json(data interface{}) error {
 	decoder := json.NewDecoder(bytes.NewBuffer(resp.body))
 	decoder.UseNumber()
 	if err := decoder.Decode(&data); err != nil {
-		return nil
+		return fmt.Errorf("%s: %s", err.Error(), string(resp.body))
 	}
 	if d, ok := data.(interface {
 		ValidateResponse(resp *Response) error
@@ -112,7 +112,7 @@ func (resp *Response) Json2(data interface{}) error {
 		return nil
 	}
 	if err := json.Unmarshal(resp.body, &data); err != nil {
-		return err
+		return fmt.Errorf("%s: %s", err.Error(), string(resp.body))
 	}
 	if d, ok := data.(interface {
 		ValidateResponse(resp *Response) error
