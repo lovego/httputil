@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/lovego/tracer"
 )
@@ -29,8 +30,17 @@ func (c *Client) DoCtx(
 		return nil, err
 	}
 	if ctx != nil {
-		ctx = tracer.Start(ctx, opName)
+		ctx = tracer.StartChild(ctx, opName)
 		defer tracer.Finish(ctx)
+		if tracer.Get(ctx) != nil {
+			var gotFirstResponseByteTime *time.Time
+			ctx, gotFirstResponseByteTime = httpTrace(ctx)
+			defer func() {
+				if !(*gotFirstResponseByteTime).IsZero() {
+					logTimeSpent(ctx, "Read", *gotFirstResponseByteTime)
+				}
+			}()
+		}
 		req = req.WithContext(ctx)
 	}
 	return c.DoReq(req)
