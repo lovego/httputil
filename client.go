@@ -35,11 +35,7 @@ func (c *Client) DoCtx(
 		if tracer.Get(ctx) != nil {
 			var gotFirstResponseByteTime *time.Time
 			ctx, gotFirstResponseByteTime = httpTrace(ctx)
-			defer func() {
-				if !(*gotFirstResponseByteTime).IsZero() {
-					logTimeSpent(ctx, "Read", *gotFirstResponseByteTime)
-				}
-			}()
+			defer logTimeSpent(ctx, "Read", *gotFirstResponseByteTime)
 		}
 		req = req.WithContext(ctx)
 	}

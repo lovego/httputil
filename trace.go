@@ -57,6 +57,9 @@ func httpTrace(ctx context.Context) (context.Context, *time.Time) {
 }
 
 func logTimeSpent(ctx context.Context, name string, start time.Time) {
+	if start.IsZero() {
+		return
+	}
 	spent := time.Since(start).Round(time.Millisecond)
 	if spent == 0 {
 		tracer.Log(ctx, name+": ", "0ms")
