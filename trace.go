@@ -10,7 +10,8 @@ import (
 )
 
 func httpTrace(ctx context.Context) (context.Context, *time.Time) {
-	var getConn, start, gotFirstResponseByte time.Time
+	var getConn = time.Now() // set it because GetConn is not called sometimes
+	var start, gotFirstResponseByte time.Time
 
 	trace := &httptrace.ClientTrace{
 		GetConn: func(hostPort string) {
