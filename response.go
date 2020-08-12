@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/lovego/errs"
 )
 
 type Response struct {
@@ -120,4 +122,20 @@ func (resp *Response) Json2(data interface{}) error {
 		return d.ValidateResponse(resp)
 	}
 	return nil
+}
+
+type CodeMessageData struct {
+	Code, Message string
+	Data          interface{}
+}
+
+func (cmd *CodeMessageData) ValidateResponse(resp *Response) error {
+	switch cmd.Code {
+	case "ok":
+		return nil
+	case "":
+		return fmt.Errorf("Unexpected response body: %s", string(resp.Body()))
+	default:
+		return errs.New(cmd.Code, cmd.Message)
+	}
 }
