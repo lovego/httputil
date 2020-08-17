@@ -126,7 +126,7 @@ func (c *Client) makeBodyReader(data interface{}) (io.Reader, error) {
 		}
 	default:
 		if !isNil(body) {
-			buf, err := c.getMarshalFunc()(body)
+			buf, err := c.GetMarshalFunc()(body)
 			if err != nil {
 				return nil, err
 			}
@@ -136,7 +136,7 @@ func (c *Client) makeBodyReader(data interface{}) (io.Reader, error) {
 	return reader, nil
 }
 
-func (c *Client) getMarshalFunc() func(v interface{}) ([]byte, error) {
+func (c *Client) GetMarshalFunc() func(v interface{}) ([]byte, error) {
 	if c.MarshalFunc != nil {
 		return c.MarshalFunc
 	}

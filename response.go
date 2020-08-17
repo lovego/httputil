@@ -97,7 +97,7 @@ func (resp *Response) Json(data interface{}) error {
 		return nil
 	}
 
-	if err := resp.getUnmarshalFunc()(resp.body, data); err != nil {
+	if err := resp.GetUnmarshalFunc()(resp.body, data); err != nil {
 		return fmt.Errorf("%s: %s", err.Error(), string(resp.body))
 	}
 	if d, ok := data.(interface {
@@ -108,7 +108,7 @@ func (resp *Response) Json(data interface{}) error {
 	return nil
 }
 
-func (resp *Response) getUnmarshalFunc() func(data []byte, v interface{}) error {
+func (resp *Response) GetUnmarshalFunc() func(data []byte, v interface{}) error {
 	if resp.UnmarshalFunc != nil {
 		return resp.UnmarshalFunc
 	}
