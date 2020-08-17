@@ -5,11 +5,6 @@ import (
 	"net/http"
 )
 
-type Client struct {
-	BaseUrl string
-	Client  *http.Client
-}
-
 func (c *Client) Get(url string, headers map[string]string, body interface{}) (*Response, error) {
 	return c.Do(http.MethodGet, url, headers, body)
 }

@@ -14,6 +14,13 @@ import (
 	"github.com/lovego/tracer"
 )
 
+type Client struct {
+	BaseUrl       string
+	Client        *http.Client
+	MarshalFunc   func(v interface{}) ([]byte, error)
+	UnmarshalFunc func(data []byte, v interface{}) error
+}
+
 func (c *Client) Do(method, url string, headers map[string]string, body interface{}) (*Response, error) {
 	req, err := c.makeReq(method, url, headers, body)
 	if err != nil {
@@ -54,7 +61,7 @@ func (c *Client) DoReq(req *http.Request) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Response{Response: resp, body: respBody}, nil
+	return &Response{Response: resp, body: respBody, UnmarshalFunc: c.UnmarshalFunc}, nil
 }
 
 func (c *Client) DoJson(method, url string, headers map[string]string, body, data interface{}) error {
@@ -84,7 +91,7 @@ func (c *Client) DoJsonCtx(
 func (c *Client) makeReq(
 	method, url string, headers map[string]string, body interface{},
 ) (*http.Request, error) {
-	bodyReader, err := makeBodyReader(body)
+	bodyReader, err := c.makeBodyReader(body)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +108,7 @@ func (c *Client) makeReq(
 	return req, nil
 }
 
-func makeBodyReader(data interface{}) (io.Reader, error) {
+func (c *Client) makeBodyReader(data interface{}) (io.Reader, error) {
 	if data == nil {
 		return nil, nil
 	}
@@ -119,7 +126,7 @@ func makeBodyReader(data interface{}) (io.Reader, error) {
 		}
 	default:
 		if !isNil(body) {
-			buf, err := json.Marshal(body)
+			buf, err := c.getMarshalFunc()(body)
 			if err != nil {
 				return nil, err
 			}
@@ -127,6 +134,13 @@ func makeBodyReader(data interface{}) (io.Reader, error) {
 		}
 	}
 	return reader, nil
+}
+
+func (c *Client) getMarshalFunc() func(v interface{}) ([]byte, error) {
+	if c.MarshalFunc != nil {
+		return c.MarshalFunc
+	}
+	return json.Marshal
 }
 
 func isNil(data interface{}) bool {

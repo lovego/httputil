@@ -1,7 +1,6 @@
 package httputil
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -12,7 +11,8 @@ import (
 
 type Response struct {
 	*http.Response
-	body []byte
+	body          []byte
+	UnmarshalFunc func(data []byte, v interface{}) error
 }
 
 func Get(url string, headers map[string]string, body interface{}) (*Response, error) {
@@ -96,9 +96,8 @@ func (resp *Response) Json(data interface{}) error {
 	if data == nil {
 		return nil
 	}
-	decoder := json.NewDecoder(bytes.NewBuffer(resp.body))
-	decoder.UseNumber()
-	if err := decoder.Decode(&data); err != nil {
+
+	if err := resp.getUnmarshalFunc()(resp.body, data); err != nil {
 		return fmt.Errorf("%s: %s", err.Error(), string(resp.body))
 	}
 	if d, ok := data.(interface {
@@ -109,19 +108,11 @@ func (resp *Response) Json(data interface{}) error {
 	return nil
 }
 
-func (resp *Response) Json2(data interface{}) error {
-	if data == nil {
-		return nil
+func (resp *Response) getUnmarshalFunc() func(data []byte, v interface{}) error {
+	if resp.UnmarshalFunc != nil {
+		return resp.UnmarshalFunc
 	}
-	if err := json.Unmarshal(resp.body, &data); err != nil {
-		return fmt.Errorf("%s: %s", err.Error(), string(resp.body))
-	}
-	if d, ok := data.(interface {
-		ValidateResponse(resp *Response) error
-	}); ok {
-		return d.ValidateResponse(resp)
-	}
-	return nil
+	return json.Unmarshal
 }
 
 type CodeMessageData struct {
