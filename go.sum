@@ -1,0 +1,4 @@
+github.com/lovego/errs v0.0.6 h1:7K8wOIEjjHdhkhcQ5iCU0L3AwCLfGjXKhwOAq/NqfAM=
+github.com/lovego/errs v0.0.6/go.mod h1:ghGAxm7RQySjaQ7+H0qWei20i/KcIGsyD4XZnj4tK/0=
+github.com/lovego/tracer v0.0.1 h1:NAggoG9bu9JrgSFOUPmZBmshmT7myOFAIy1zWeNNt9o=
+github.com/lovego/tracer v0.0.1/go.mod h1:cqfr/BqdkspXnph/SO8AOt58d+ziUGEzzM3OXMtI0rc=

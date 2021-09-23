@@ -86,10 +86,7 @@ func (resp *Response) Check(codes ...int) error {
 }
 
 func (resp *Response) CodeError() error {
-	return fmt.Errorf(`HTTP %s %s
-Unexpected Response: %s
-%s`, resp.Request.Method, resp.Request.URL.String(), resp.Status, resp.body,
-	)
+	return setErrorData(errs.Newf("", "Unexpected Response: %s", resp.Status), resp)
 }
 
 func (resp *Response) Json(data interface{}) error {
@@ -98,7 +95,7 @@ func (resp *Response) Json(data interface{}) error {
 	}
 
 	if err := resp.GetUnmarshalFunc()(resp.body, data); err != nil {
-		return fmt.Errorf("%s: %s", err.Error(), string(resp.body))
+		return setErrorData(errs.Wrap(err).(*errs.Error), resp)
 	}
 	if d, ok := data.(interface {
 		ValidateResponse(resp *Response) error
@@ -125,8 +122,14 @@ func (cmd *CodeMessageData) ValidateResponse(resp *Response) error {
 	case "ok":
 		return nil
 	case "":
-		return fmt.Errorf("Unexpected response body: %s", string(resp.Body()))
+		return setErrorData(errs.New("", "Unexpected Response Body"), resp)
 	default:
 		return errs.New(cmd.Code, cmd.Message)
 	}
+}
+
+func setErrorData(err *errs.Error, resp *Response) *errs.Error {
+	return err.SetData(fmt.Sprintf("HTTP %s %s\nResponse Body: %s",
+		resp.Request.Method, resp.Request.URL.String(), resp.body,
+	))
 }
